@@ -12,7 +12,6 @@ typedef struct {
 	float nota1, nota2;
 } Aluno;
 
-
 //Função para organizar as informações de cada linha para uma struct chamada 'Aluno'.
 Aluno aluno_organiza (char frases[][TAMANHO_MIN]) {
 	Aluno aluno;
@@ -27,9 +26,9 @@ Aluno aluno_organiza (char frases[][TAMANHO_MIN]) {
 	return aluno;
 }
 
+//Divide uma String em pedaços e inseri elas na array adjacente.
 void separador (char linha[], char frases[][TAMANHO_MIN]) {
 	char *memoria = linha;
-
 	for (int i = 0; i < 5; i++) {
 			//'strok_r()' usa um ponteiro da linha e quando chega em uma ',' retorna as informações anterior a ela.
 			strcpy(frases[i], strtok_r(memoria, ",", &memoria));
@@ -38,8 +37,9 @@ void separador (char linha[], char frases[][TAMANHO_MIN]) {
 
 int main () {
 
-	FILE *entrada;
+	FILE *entrada, *saida;
 	entrada = fopen("DadosEntrada.csv", "r");
+	saida = fopen("SituacaoFinal.csv", "w");
 
 	if (entrada == NULL) {
 		printf("Arquivo nao encontrado.");
@@ -51,15 +51,20 @@ int main () {
 
 	//Este loop ira ler as linhas do arquivo uma de cada vez.
 	while (fgets(linha, sizeof(linha), entrada) != NULL) {
+		if (strcmp(linha, "Nome,Telefone,Curso,Nota1,Nota2\n") == 0) continue;
 		strtok(linha, "\n"); //remove o fim da linha.
-		separador (linha, frases);
 
+		separador (linha, frases);
 		Aluno aluno = aluno_organiza (frases);
-		//'printf' temporario.
-		printf ("[Aluno: %s | Nota: %.2f | Nota2: %.2f]\n", aluno.nome, aluno.nota1, aluno.nota2);
+
+		//Calcula a media e gera o arquivo final.
+		float media = (aluno.nota1 + aluno.nota2) / 2;
+		if (media >= 7) fprintf (saida, "%s, %.2f, APROVADO\n", aluno.nome, media);
+		else fprintf (saida, "%s, %.2f, REPROVADO\n", aluno.nome, media);
 	}
 
 	fclose (entrada);
+	fclose (saida);
 
 	return 0;
 }
